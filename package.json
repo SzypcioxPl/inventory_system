@@ -1,0 +1,26 @@
+{
+  "name": "inventory_system",
+  "version": "1.0.0",
+  "description": "inventory system for telephoners students science club",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SzypcioxPl/inventory_system.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SzypcioxPl/inventory_system/issues"
+  },
+  "homepage": "https://github.com/SzypcioxPl/inventory_system#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.9.9",
+    "sequelize": "^6.37.3"
+  }
+}
