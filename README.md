@@ -6,6 +6,7 @@
 
 ## Spis treści
 - [Opis](#opis)
+- [Wersja 1.1](#wersja-11)
 - [Instalacja](#instalacja)
 - [Uruchamianie Backend](#uruchamianie-backend)
 - [Dokumentacja API](#dokumentacja-api)
@@ -15,6 +16,17 @@
 
 ## Opis
 System służy do wypożyczania rzeczy z koła naukowego. Aplikacja podzielona jest na frontend i backend. Backend jest napisany w Node.js i korzysta z MySQL oraz Sequelize. Frontend korzysta z React. Dokumentacja API jest dostępna za pomocą Swagger UI.
+
+## Wersja 1.1
+- Aby uruchomić Backend, połącz się z VPN do sieci AGH. Pod adresem [https://panel.agh.edu.pl/main.php](https://panel.agh.edu.pl/main.php) znajdziesz instrukcje, jak to zrobić.
+- W podkatalogu `config` znajduje się plik `database.js`. Aby uzyskać dostęp do bazy danych, zamień fragment kodu `somelogin` i `somepassword` na dane wysłane na messenger.
+- Reszta powinna pozostać bez zmian.
+- **UWAGA!** Możliwe, że coś może się wykrzaczyć w zależności od systemu, którego używasz. W takim przypadku należy usunąć folder `node_modules` i zainstalować go ponownie wraz z bibliotekami. Aby to zrobić, użyj komendy `npm install`, a następnie, aby zainstalować poszczególne biblioteki, użyj `npm install nazwa_biblioteki`. Biblioteki, których używamy, to:
+  * `swagger_ui_express`
+  * `swagger`
+  * `bcrypt`
+  * `jsonwebtoken`
+  * `sequelize`
 
 ## Instalacja
 
