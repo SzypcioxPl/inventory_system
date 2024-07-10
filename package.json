@@ -2,9 +2,10 @@
   "name": "inventory_system",
   "version": "1.0.0",
   "description": "inventory system for telephoners students science club",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
@@ -18,9 +19,12 @@
   "homepage": "https://github.com/SzypcioxPl/inventory_system#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.9.9",
-    "sequelize": "^6.37.3"
+    "sequelize": "^6.37.3",
+    "swagger": "^0.7.5",
+    "swagger-ui-express": "^5.0.1"
   }
 }

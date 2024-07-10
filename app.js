@@ -13,11 +13,14 @@ const app = express();
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-sequelize.sync({ force: true })
-    .then(() => {
-        console.log('Database & tables created!');
-    });
+// sequelize.sync({ force: true })
+//     .then(() => {
+//         console.log('Database & tables created!');
 
+sequelize.sync({ force: false }).then(() => {
+    console.log('Database & tables created!');
+});
+    
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
