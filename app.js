@@ -126,6 +126,19 @@ app.delete('/items/:id', authenticateJWT, async (req, res) => {
 });
 
 
+//Showing aviailable items only to admin
+//Doesn't work
+//
+// app.get('/items', authenticateJWT, async (req, res) => {
+//     if (req.user.type === 'admin') {
+//         const items = await Item.findAll();
+//         res.json(items);
+//     } else {
+//         const items = await Item.findAll({ where: { quantity: { [Op.gt]: 0 } } });
+//         res.json(items);
+//     }
+// });
+
 //Showing all items
 app.get('/items', authenticateJWT, async (req, res) => {
     if (req.user.type === 'admin') {
