@@ -8,6 +8,19 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
+const cors = require("cors");
+
+
+
+
+     console.log('Database & tables created!');
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 const app = express();
 app.use(express.json());
@@ -61,6 +74,26 @@ const authenticateJWT = (req, res, next) => {
         res.sendStatus(401);
     }
 };
+
+// Endpoint to check if the user is an admin
+app.get('/check-admin', authenticateJWT, async (req, res) => {
+    try {
+        const user = await User.findByPk(req.user.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.type === 'admin') {
+            return res.json({ isAdmin: true });
+        } else {
+            return res.json({ isAdmin: false });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+});
 
 
 
