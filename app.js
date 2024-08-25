@@ -183,6 +183,40 @@ app.post('/orders', authenticateJWT, async (req, res) => {
     }
 });
 
+// calculating the number of days of the loan
+app.get('/loans/days', authenticateJWT, async (req, res) => {
+    try {
+        // is the user logged in?
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        const loans = await CurrentLoan.findAll({ where: { userId: req.user.id } });
+
+        if (loans.length === 0) {
+            return res.status(404).json({ message: 'No orders' });
+        }
+
+        const loansWithDays = loans.map(loan => {
+            const loanDate = new Date(loan.loanDate);
+            const currentDate = new Date();
+            const timeDiff = Math.abs(currentDate - loanDate);
+            const daysOnLoan = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+            return {
+                itemId: loan.itemId,
+                daysOnLoan: daysOnLoan
+            };
+        });
+
+        // Zwrócenie wyników
+        return res.status(200).json(loansWithDays);
+    } catch (error) {
+        console.error('Error retrieving loan days:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 // Orders accepting and rejecting
 app.patch('/orders/:orderId/status', authenticateJWT, async (req, res) => {
     try {
