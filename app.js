@@ -167,9 +167,9 @@ app.post('/orders', authenticateJWT, async (req, res) => {
             return res.status(404).json({ message: 'Item not found' });
         }
 
-        // 
+
         const newOrder = await Order.create({
-            userId: req.user.id, 
+            userId: req.user.userId, 
             itemId: item.id,
             orderDate: new Date(),
             status: 'pending' 
