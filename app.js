@@ -150,6 +150,22 @@ app.get('/items', authenticateJWT, async (req, res) => {
     }
 });
 
+// showing all orders
+app.get('/admin/orders', authenticateJWT, async (req, res) => {
+    // is the user an admin?
+    if (req.user.type !== 'admin') {
+        return res.sendStatus(403); 
+    }
+
+    try {
+        const orders = await Order.findAll();
+        res.json(orders);
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ message: 'Error fetching orders' });
+    }
+});
+
 
 // Creating a new order 
 app.post('/orders', authenticateJWT, async (req, res) => {
@@ -209,7 +225,6 @@ app.get('/loans/days', authenticateJWT, async (req, res) => {
             };
         });
 
-        // Zwrócenie wyników
         return res.status(200).json(loansWithDays);
     } catch (error) {
         console.error('Error retrieving loan days:', error);
