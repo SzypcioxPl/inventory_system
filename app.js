@@ -95,9 +95,28 @@ app.get('/check-admin', authenticateJWT, async (req, res) => {
     }
 });
 
+// Endpoint to get current user data except password
+app.get('/me', authenticateJWT, async (req, res) => {
+    try {
+        const user = await User.findOne({
+            where: { id: req.user.userId },
+            attributes: { exclude: ['password'] } // excluding password
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json(user);
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+});
 
 
-//CRUD
+
+//===============================CRUD=======================================
 
 
 //Adding item
@@ -126,7 +145,6 @@ app.delete('/items/:id', authenticateJWT, async (req, res) => {
 });
 
 
-
 //Showing all items
 app.get('/items', authenticateJWT, async (req, res) => {
     if (req.user.type === 'admin') {
@@ -137,6 +155,8 @@ app.get('/items', authenticateJWT, async (req, res) => {
         res.json(items);
     }
 });
+
+//================================================================================================
 
 // showing pending orders
 app.get('/admin/orders/pending', authenticateJWT, async (req, res) => {
@@ -177,7 +197,7 @@ app.get('/admin/orders/processed', authenticateJWT, async (req, res) => {
 });
 
 
-//orders for student
+//showing orders for student
 app.get('/student/orders', authenticateJWT, async (req, res) => {
     try {
         const orders = await Order.findAll({
