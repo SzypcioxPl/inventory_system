@@ -166,6 +166,26 @@ app.get('/admin/orders', authenticateJWT, async (req, res) => {
     }
 });
 
+//orders for student
+app.get('/student/orders', authenticateJWT, async (req, res) => {
+    try {
+        const orders = await Order.findAll({
+            where: {
+                userId: req.user.userId
+            }
+        });
+
+        if (orders.length > 0) {
+            res.json(orders); 
+        } else {
+            res.status(404).json({ message: 'No orders found for this user' });
+        }
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ message: 'Error fetching orders' });
+    }
+});
+
 
 // Creating a new order 
 app.post('/orders', authenticateJWT, async (req, res) => {
