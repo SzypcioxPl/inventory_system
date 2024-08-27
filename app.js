@@ -126,18 +126,6 @@ app.delete('/items/:id', authenticateJWT, async (req, res) => {
 });
 
 
-//Showing aviailable items only to admin
-//Doesn't work
-//
-// app.get('/items', authenticateJWT, async (req, res) => {
-//     if (req.user.type === 'admin') {
-//         const items = await Item.findAll();
-//         res.json(items);
-//     } else {
-//         const items = await Item.findAll({ where: { quantity: { [Op.gt]: 0 } } });
-//         res.json(items);
-//     }
-// });
 
 //Showing all items
 app.get('/items', authenticateJWT, async (req, res) => {
@@ -150,21 +138,44 @@ app.get('/items', authenticateJWT, async (req, res) => {
     }
 });
 
-// showing all orders
-app.get('/admin/orders', authenticateJWT, async (req, res) => {
+// showing pending orders
+app.get('/admin/orders/pending', authenticateJWT, async (req, res) => {
     // is the user an admin?
     if (req.user.type !== 'admin') {
         return res.sendStatus(403); 
     }
 
     try {
-        const orders = await Order.findAll();
-        res.json(orders);
+        const pendingOrders = await Order.findAll({
+            where: { status: 'pending' }
+        });
+        res.json(pendingOrders);
     } catch (error) {
-        console.error('Error fetching orders:', error);
-        res.status(500).json({ message: 'Error fetching orders' });
+        console.error('Error fetching pending orders:', error);
+        res.status(500).json({ message: 'Error fetching pending orders' });
     }
 });
+
+// showing accepted and rejected orders
+app.get('/admin/orders/processed', authenticateJWT, async (req, res) => {
+    // sprawdzenie, czy użytkownik jest administratorem
+    if (req.user.type !== 'admin') {
+        return res.sendStatus(403); 
+    }
+
+    try {
+        const processedOrders = await Order.findAll({
+            where: {
+                status: ['accepted', 'rejected']  // filtering by status
+            }
+        });
+        res.json(processedOrders);
+    } catch (error) {
+        console.error('Error fetching processed orders:', error);
+        res.status(500).json({ message: 'Error fetching processed orders' });
+    }
+});
+
 
 //orders for student
 app.get('/student/orders', authenticateJWT, async (req, res) => {
