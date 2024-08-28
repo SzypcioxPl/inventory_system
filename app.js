@@ -9,7 +9,8 @@ const jwt = require('jsonwebtoken');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
 const cors = require("cors");
-
+const multer = require('multer');
+const path = require('path');
 
 
 
@@ -38,13 +39,31 @@ app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
 
-//Register endpoint OLD
-// app.post('/register', async (req, res) => {
-//     const { username, password, type } = req.body;
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     const user = await User.create({ username, password: hashedPassword, type });
-//     res.status(201).json(user);
-// });
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // default folder for file uploads
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // ex. 1622471652987.jpg
+    }
+});
+
+// File filter for images
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only images are allowed'), false);
+    }
+};
+
+const upload = multer({ storage, fileFilter });
+
+//================================================================================================
+//===============================ENDPOINTS========================================================
+//================================================================================================
+
 
 //register endpoint
 app.post('/register', async (req, res) => {
@@ -195,6 +214,9 @@ app.get('/items', authenticateJWT, async (req, res) => {
 });
 
 //================================================================================================
+
+
+//======================================ORDERS==================================================
 
 // showing pending orders
 app.get('/admin/orders/pending', authenticateJWT, async (req, res) => {
@@ -352,6 +374,7 @@ app.post('/approve-order/:id', authenticateJWT, async (req, res) => {
                 returnDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // Default return date set to one month from loan date
                 zaakceptowal: req.user.username, // Set the admin's username who accepted the order
                 ilosc: order.ilosc,
+                status: 'accepted'
             });
 
             item.quantity -= order.ilosc; // Update item quantity based on the order
@@ -369,6 +392,8 @@ app.post('/approve-order/:id', authenticateJWT, async (req, res) => {
     }
 });
 
+
+//======================================LOANS======================================================
 
 // OLD Orders accepting and rejecting
 // app.patch('/orders/:orderId/status', authenticateJWT, async (req, res) => {
@@ -470,10 +495,10 @@ app.get('/user/current-loans', authenticateJWT, async (req, res) => {
     try {
         const loans = await CurrentLoan.findAll({
             where: {
-                userId: req.user.userId, // zakładam, że `userId` jest w tokenie JWT
+                userId: req.user.userId, 
                 returnDate: null
             },
-            include: [Item] // Opcjonalnie: dołączenie informacji o przedmiocie
+            include: [Item] 
         });
 
         if (loans.length === 0) {
@@ -484,5 +509,124 @@ app.get('/user/current-loans', authenticateJWT, async (req, res) => {
     } catch (error) {
         console.error('Error fetching user\'s current loans:', error);
         res.status(500).json({ message: 'Error fetching user\'s current loans' });
+    }
+});
+
+// sending loan image by user
+app.post('/return/:loanId', authenticateJWT, upload.single('image'), async (req, res) => {
+    try {
+        const { loanId } = req.params;
+        const loan = await CurrentLoan.findByPk(loanId);
+
+        if (!loan || loan.userId !== req.user.id) {
+            return res.status(404).json({ message: 'Loan not found or unauthorized' });
+        }
+
+        const imagePath = req.file.path;
+
+        loan.returnDate = new Date();
+        loan.returnImagePath = imagePath;  // Saving the image path to the loan in db
+        await loan.save();
+
+        res.status(200).json({ message: 'Return initiated successfully', loan });
+    } catch (error) {
+        console.error('Error during return process:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// showing image for curent loan
+app.get('/admin/loans/:id/image', authenticateJWT, async (req, res) => {
+    if (req.user.type !== 'admin') {
+        return res.sendStatus(403);
+    }
+
+    try {
+        const loan = await CurrentLoan.findByPk(req.params.id);
+
+        if (!loan || !loan.imagePath) {
+            return res.status(404).json({ message: 'Image not found' });
+        }
+
+        // Send the image file
+        res.sendFile(path.join(__dirname, loan.imagePath));
+    } catch (error) {
+        console.error('Error fetching image:', error);
+        res.status(500).json({ message: 'Error fetching image' });
+    }
+});
+
+// sending return request by user
+app.post('/loans/:id/request-return', authenticateJWT, async (req, res) => {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        const loanId = req.params.id;
+
+        //is the loan available for the user?
+        const loan = await CurrentLoan.findOne({
+            where: {
+                id: loanId,
+                userId: req.user.id
+            }
+        });
+
+        if (!loan) {
+            return res.status(404).json({ message: 'Loan not found or not accessible' });
+        }
+
+        // does the user have an image uploaded?
+        if (!loan.imagePath) {
+            return res.status(400).json({ message: 'Image is required before requesting a return' });
+        }
+
+        // updating the loan status to 'waiting'
+        loan.status = 'waiting';
+        await loan.save();
+
+        return res.status(200).json({ message: 'Return request submitted successfully', loan });
+    } catch (error) {
+        console.error('Error submitting return request:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.post('/admin/loans/:id/accept', authenticateJWT, async (req, res) => {
+    try {
+        if (req.user.type !== 'admin') {
+            return res.status(403).json({ message: 'Forbidden: Only admins can perform this action' });
+        }
+
+        const loanId = req.params.id;
+
+        const loan = await CurrentLoan.findOne({
+            where: {
+                id: loanId,
+            }
+        });
+
+        if (!loan) {
+            return res.status(404).json({ message: 'Loan not found' });
+        }
+
+        // find the item related to the loan
+        const item = await Item.findByPk(loan.itemId);
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found' });
+        }
+
+        // update the item quantity
+        item.quantity += loan.ilosc;
+        await item.save();
+
+        // delete the loan
+        await loan.destroy();
+
+        return res.status(200).json({ message: 'Loan accepted and item quantity updated successfully' });
+    } catch (error) {
+        console.error('Error accepting loan:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 });
