@@ -38,14 +38,52 @@ app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
 
-//Register endpoint
-app.post('/register', async (req, res) => {
-    const { username, password, type } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ username, password: hashedPassword, type });
-    res.status(201).json(user);
-});
+//Register endpoint OLD
+// app.post('/register', async (req, res) => {
+//     const { username, password, type } = req.body;
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     const user = await User.create({ username, password: hashedPassword, type });
+//     res.status(201).json(user);
+// });
 
+//register endpoint
+app.post('/register', async (req, res) => {
+    const { username, password, type, email, numer_indeksu } = req.body;
+
+    try {
+        // hashing the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = await User.create({
+            username,
+            password: hashedPassword,
+            type,
+            email,
+            numer_indeksu
+        });
+
+               const userResponse = {
+            id: user.id,
+            username: user.username,
+            type: user.type,
+            email: user.email,
+            numer_indeksu: user.numer_indeksu,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
+        };
+
+        res.status(201).json(userResponse);
+    } catch (error) {
+        console.error('Error during user registration:', error);
+
+        // handling unique constraint errors
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ message: 'Email or numer_indeksu already exists' });
+        }
+
+        res.status(500).json({ message: 'Error during user registration' });
+    }
+});
 
 //Login endpoint
 app.post('/login', async (req, res) => {
@@ -282,6 +320,10 @@ app.get('/loans/days', authenticateJWT, async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+//TODO: Implement the endpoint for returning an item
+//TODO: naprawic akceptacje zamowienia aby usuwało order i dodawało currentLoan
+//TODO: zmniejszanie ilości itemów o ilość z frontendu
 
 // Orders accepting and rejecting
 app.patch('/orders/:orderId/status', authenticateJWT, async (req, res) => {
