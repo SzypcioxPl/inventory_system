@@ -322,55 +322,98 @@ app.get('/loans/days', authenticateJWT, async (req, res) => {
 });
 
 //TODO: Implement the endpoint for returning an item
-//TODO: naprawic akceptacje zamowienia aby usuwało order i dodawało currentLoan
-//TODO: zmniejszanie ilości itemów o ilość z frontendu
 
-// Orders accepting and rejecting
-app.patch('/orders/:orderId/status', authenticateJWT, async (req, res) => {
-    try {
-        const { orderId } = req.params;
-        const { status } = req.body;
+// FIXED Approve or reject order by Admin
+app.post('/approve-order/:id', authenticateJWT, async (req, res) => {
+    if (req.user.type !== 'admin') {
+        return res.sendStatus(403); // Only admins can approve/reject orders
+    }
 
-        // is User an admin?
-        if (req.user.type !== 'admin') {
-            return res.status(403).json({ message: 'Only admins can update order status' });
+    const { id } = req.params;
+    const { status } = req.body; // Accepting "status" from request body
+    const order = await Order.findByPk(id);
+    if (!order) {
+        return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const item = await Item.findByPk(order.itemId);
+    if (!item) {
+        return res.status(404).json({ message: 'Item not found' });
+    }
+
+    if (status === 'accepted') {
+        if (item.quantity >= order.ilosc) {
+            await CurrentLoan.create({
+                userId: order.userId,
+                itemId: order.itemId,
+                loanDate: new Date(),
+                returnDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // Default return date set to one month from loan date
+                zaakceptowal: req.user.username, // Set the admin's username who accepted the order
+                ilosc: order.ilosc,
+            });
+
+            item.quantity -= order.ilosc; // Update item quantity based on the order
+            await item.save();
+            await order.destroy(); // Remove the order after acceptance
+            return res.status(200).json({ message: 'Order accepted and loan created' });
+        } else {
+            return res.status(400).json({ message: 'Item not available in requested quantity' });
         }
-
-        if (!['accepted', 'rejected'].includes(status)) {
-            return res.status(400).json({ message: 'Invalid status' });
-        }
-
-        const order = await Order.findByPk(orderId);
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
-        }
-
-        order.status = status;
-        await order.save();
-
-        //If accepted, update the item quantity and create a new loan
-        if (status === 'accepted') {
-            const item = await Item.findByPk(order.itemId);
-            if (item && item.quantity > 0) {
-                await CurrentLoan.create({
-                    userId: order.userId,
-                    itemId: order.itemId,
-                    loanDate: new Date(),
-                    returnDate: null
-                });
-                item.quantity -= 1;
-                await item.save();
-            } else {
-                return res.status(400).json({ message: 'Item not available or out of stock' });
-            }
-        }
-
-        res.status(200).json({ message: `Order status updated to ${status}` });
-    } catch (error) {
-        console.error('Error updating order status:', error);
-        res.status(500).json({ message: 'Internal server error' });
+    } else if (status === 'rejected') {
+        await order.destroy(); // Remove the order if it is rejected
+        return res.status(200).json({ message: 'Order rejected' });
+    } else {
+        return res.status(400).json({ message: 'Invalid status value' });
     }
 });
+
+
+// OLD Orders accepting and rejecting
+// app.patch('/orders/:orderId/status', authenticateJWT, async (req, res) => {
+//     try {
+//         const { orderId } = req.params;
+//         const { status } = req.body;
+
+//         // is User an admin?
+//         if (req.user.type !== 'admin') {
+//             return res.status(403).json({ message: 'Only admins can update order status' });
+//         }
+
+//         if (!['accepted', 'rejected'].includes(status)) {
+//             return res.status(400).json({ message: 'Invalid status' });
+//         }
+
+//         const order = await Order.findByPk(orderId);
+//         if (!order) {
+//             return res.status(404).json({ message: 'Order not found' });
+//         }
+
+//         order.status = status;
+//         await order.save();
+
+//         //If accepted, update the item quantity and create a new loan
+//         if (status === 'accepted') {
+//             const item = await Item.findByPk(order.itemId);
+//             if (item && item.quantity > 0) {
+//                 await CurrentLoan.create({
+//                     userId: order.userId,
+//                     itemId: order.itemId,
+//                     loanDate: new Date(),
+//                     returnDate: null
+//                 });
+//                 item.quantity -= 1;
+//                 await item.save();
+//             } else {
+//                 return res.status(400).json({ message: 'Item not available or out of stock' });
+//             }
+//         }
+
+//         res.status(200).json({ message: `Order status updated to ${status}` });
+//     } catch (error) {
+//         console.error('Error updating order status:', error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// });
 
 // OLD accepting order by Admin
 // app.post('/approve-order/:id', authenticateJWT, async (req, res) => {
@@ -399,3 +442,45 @@ app.patch('/orders/:orderId/status', authenticateJWT, async (req, res) => {
 //         res.sendStatus(404);
 //     }
 // });
+
+// showing all current loans (for admin)
+app.get('/admin/current-loans', authenticateJWT, async (req, res) => {
+    if (req.user.type !== 'admin') {
+        return res.sendStatus(403);
+    }
+
+    try {
+        const loans = await CurrentLoan.findAll({
+            where: {
+                returnDate: null
+            },
+            include: [User, Item] 
+        });
+        res.json(loans);
+    } catch (error) {
+        console.error('Error fetching current loans:', error);
+        res.status(500).json({ message: 'Error fetching current loans' });
+    }
+});
+
+// showing current loans for the logged-in user
+app.get('/user/current-loans', authenticateJWT, async (req, res) => {
+    try {
+        const loans = await CurrentLoan.findAll({
+            where: {
+                userId: req.user.userId, // zakładam, że `userId` jest w tokenie JWT
+                returnDate: null
+            },
+            include: [Item] // Opcjonalnie: dołączenie informacji o przedmiocie
+        });
+
+        if (loans.length === 0) {
+            return res.status(404).json({ message: 'No current loans found' });
+        }
+
+        res.json(loans);
+    } catch (error) {
+        console.error('Error fetching user\'s current loans:', error);
+        res.status(500).json({ message: 'Error fetching user\'s current loans' });
+    }
+});

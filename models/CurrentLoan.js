@@ -25,6 +25,17 @@ const CurrentLoan = sequelize.define('CurrentLoan', {
     returnDate: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    zaakceptował: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: User,
+            key: 'id'
+        }
+    },
+    ilosc: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 });
 

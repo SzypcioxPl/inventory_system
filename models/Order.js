@@ -27,6 +27,10 @@ const Order = sequelize.define('Order', {
         values: ['pending', 'approved', 'rejected'],
         defaultValue: 'pending',
         allowNull: false
+    },
+    ilosc: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 });
 
