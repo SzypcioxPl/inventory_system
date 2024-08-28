@@ -259,34 +259,36 @@ app.get('/student/orders', authenticateJWT, async (req, res) => {
 // Creating a new order 
 app.post('/orders', authenticateJWT, async (req, res) => {
     try {
-        const { itemId } = req.body;
+        const { itemId, ilosc } = req.body;
 
-        //  is the user logged in?
         if (!req.user || !req.user.id) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        // is the item accessible?
         const item = await Item.findByPk(itemId);
         if (!item) {
             return res.status(404).json({ message: 'Item not found' });
         }
 
+        if (item.quantity < ilosc) {
+            return res.status(400).json({ message: 'Not enough items available' });
+        }
 
         const newOrder = await Order.create({
             userId: req.user.userId, 
             itemId: item.id,
+            ilosc, 
             orderDate: new Date(),
             status: 'pending' 
         });
 
-       
         return res.status(201).json(newOrder);
     } catch (error) {
         console.error('Error creating order:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 // calculating the number of days of the loan
 app.get('/loans/days', authenticateJWT, async (req, res) => {
