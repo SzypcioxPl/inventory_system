@@ -395,81 +395,6 @@ app.post('/approve-order/:id', authenticateJWT, async (req, res) => {
 
 //======================================LOANS======================================================
 
-// OLD Orders accepting and rejecting
-// app.patch('/orders/:orderId/status', authenticateJWT, async (req, res) => {
-//     try {
-//         const { orderId } = req.params;
-//         const { status } = req.body;
-
-//         // is User an admin?
-//         if (req.user.type !== 'admin') {
-//             return res.status(403).json({ message: 'Only admins can update order status' });
-//         }
-
-//         if (!['accepted', 'rejected'].includes(status)) {
-//             return res.status(400).json({ message: 'Invalid status' });
-//         }
-
-//         const order = await Order.findByPk(orderId);
-//         if (!order) {
-//             return res.status(404).json({ message: 'Order not found' });
-//         }
-
-//         order.status = status;
-//         await order.save();
-
-//         //If accepted, update the item quantity and create a new loan
-//         if (status === 'accepted') {
-//             const item = await Item.findByPk(order.itemId);
-//             if (item && item.quantity > 0) {
-//                 await CurrentLoan.create({
-//                     userId: order.userId,
-//                     itemId: order.itemId,
-//                     loanDate: new Date(),
-//                     returnDate: null
-//                 });
-//                 item.quantity -= 1;
-//                 await item.save();
-//             } else {
-//                 return res.status(400).json({ message: 'Item not available or out of stock' });
-//             }
-//         }
-
-//         res.status(200).json({ message: `Order status updated to ${status}` });
-//     } catch (error) {
-//         console.error('Error updating order status:', error);
-//         res.status(500).json({ message: 'Internal server error' });
-//     }
-// });
-
-// OLD accepting order by Admin
-// app.post('/approve-order/:id', authenticateJWT, async (req, res) => {
-//     if (req.user.type !== 'admin') {
-//         return res.sendStatus(403);
-//     }
-//     const { id } = req.params;
-//     const order = await Order.findByPk(id);
-//     if (order) {
-//         const item = await Item.findByPk(order.itemId);
-//         if (item && item.quantity > 0) {
-//             await CurrentLoan.create({
-//                 userId: order.userId,
-//                 itemId: order.itemId,
-//                 loanDate: new Date(),
-//                 returnDate: null
-//             });
-//             item.quantity -= 1;
-//             await item.save();
-//             await order.destroy();
-//             res.sendStatus(200);
-//         } else {
-//             res.status(400).json({ message: 'Item not available' });
-//         }
-//     } else {
-//         res.sendStatus(404);
-//     }
-// });
-
 // showing all current loans (for admin)
 app.get('/admin/current-loans', authenticateJWT, async (req, res) => {
     if (req.user.type !== 'admin') {
@@ -630,3 +555,8 @@ app.post('/admin/loans/:id/accept', authenticateJWT, async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+//TODO: Deleting user account
+//TODO: Updating user account
+//TODO: Updating item
+//TODO: Images of items
