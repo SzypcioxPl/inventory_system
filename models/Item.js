@@ -16,4 +16,9 @@ const Item = sequelize.define('Item', {
     }
 });
 
+Item.hasMany(CurrentLoan, {
+    foreignKey: 'itemId',
+    as: 'loans'
+  });
+  
 module.exports = Item;

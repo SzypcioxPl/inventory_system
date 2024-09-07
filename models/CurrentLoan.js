@@ -49,4 +49,10 @@ const CurrentLoan = sequelize.define('CurrentLoan', {
     }
 });
 
+CurrentLoan.belongsTo(Item, {
+    foreignKey: 'itemId',
+    as: 'item'
+  });
+
+  
 module.exports = CurrentLoan;

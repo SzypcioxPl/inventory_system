@@ -11,10 +11,12 @@ const swaggerDocument = require('./swagger.json');
 const cors = require("cors");
 const multer = require('multer');
 const path = require('path');
+ 
+console.log('Database & tables created!');
 
+const app = express();
+app.use(express.json());
 
-
-     console.log('Database & tables created!');
 
 app.use(
   cors({
@@ -23,10 +25,7 @@ app.use(
   })
 );
 
-const app = express();
-app.use(express.json());
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
+ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // sequelize.sync({ force: true })
 //     .then(() => {
 //         console.log('Database & tables created!');
@@ -374,7 +373,7 @@ app.post('/approve-order/:id', authenticateJWT, async (req, res) => {
                 returnDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // Default return date set to one month from loan date
                 zaakceptowal: req.user.username, // Set the admin's username who accepted the order
                 ilosc: order.ilosc,
-                status: 'accepted'
+                status: 'active' // Default status set to ACTIVE NOT 'ACCEPTED'
             });
 
             item.quantity -= order.ilosc; // Update item quantity based on the order
