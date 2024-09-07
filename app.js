@@ -1,9 +1,9 @@
 const express = require('express');
 const sequelize = require('./config/database');
-const User = require('./models/User');
-const Item = require('./models/Item');
+
+const { Item, CurrentLoan, User , Order } = require('./models/associations');
+
 const Order = require('./models/Order');
-const CurrentLoan = require('./models/CurrentLoan');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const swaggerUi = require('swagger-ui-express');
@@ -30,9 +30,13 @@ app.use(
 //     .then(() => {
 //         console.log('Database & tables created!');
 
-sequelize.sync({ force: false }).then(() => {
-    console.log('Database & tables created!');
-});
+sequelize.sync()
+    .then(() => {
+        console.log('Baza danych została zaktualizowana');
+    })
+    .catch(err => {
+        console.error('Błąd podczas synchronizacji z bazą danych:', err);
+    });
     
 app.listen(3000, () => {
     console.log('Server is running on port 3000');

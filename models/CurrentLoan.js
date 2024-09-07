@@ -1,22 +1,14 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User');
-const Item = require('./Item');
 
 const CurrentLoan = sequelize.define('CurrentLoan', {
     userId: {
         type: DataTypes.INTEGER,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: false
     },
     itemId: {
         type: DataTypes.INTEGER,
-        references: {
-            model: Item,
-            key: 'id'
-        }
+        allowNull: false
     },
     loanDate: {
         type: DataTypes.DATE,
@@ -28,10 +20,7 @@ const CurrentLoan = sequelize.define('CurrentLoan', {
     },
     zaakceptował: {
         type: DataTypes.INTEGER,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: true
     },
     ilosc: {
         type: DataTypes.INTEGER,
@@ -49,10 +38,4 @@ const CurrentLoan = sequelize.define('CurrentLoan', {
     }
 });
 
-CurrentLoan.belongsTo(Item, {
-    foreignKey: 'itemId',
-    as: 'item'
-  });
-
-  
 module.exports = CurrentLoan;
