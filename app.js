@@ -3,7 +3,6 @@ const sequelize = require('./config/database');
 
 const { Item, CurrentLoan, User , Order } = require('./models/associations');
 
-const Order = require('./models/Order');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const swaggerUi = require('swagger-ui-express');
@@ -563,3 +562,4 @@ app.post('/admin/loans/:id/accept', authenticateJWT, async (req, res) => {
 //TODO: Updating user account
 //TODO: Updating item
 //TODO: Images of items
+
