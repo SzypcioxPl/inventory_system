@@ -408,7 +408,10 @@ app.get('/admin/current-loans', authenticateJWT, async (req, res) => {
             where: {
                 returnDate: null
             },
-            include: [User, Item] 
+            include: [
+                { model: User },
+                { model: Item, as: 'item' }  // alias 'item'
+            ]
         });
         res.json(loans);
     } catch (error) {
@@ -425,7 +428,9 @@ app.get('/user/current-loans', authenticateJWT, async (req, res) => {
                 userId: req.user.userId, 
                 returnDate: null
             },
-            include: [Item] 
+            include: [
+                { model: Item, as: 'item' }  // alias 'item'
+            ]
         });
 
         if (loans.length === 0) {
@@ -462,27 +467,6 @@ app.post('/return/:loanId', authenticateJWT, upload.single('image'), async (req,
     }
 });
 
-// showing image for curent loan
-app.get('/admin/loans/:id/image', authenticateJWT, async (req, res) => {
-    if (req.user.type !== 'admin') {
-        return res.sendStatus(403);
-    }
-
-    try {
-        const loan = await CurrentLoan.findByPk(req.params.id);
-
-        if (!loan || !loan.imagePath) {
-            return res.status(404).json({ message: 'Image not found' });
-        }
-
-        // Send the image file
-        res.sendFile(path.join(__dirname, loan.imagePath));
-    } catch (error) {
-        console.error('Error fetching image:', error);
-        res.status(500).json({ message: 'Error fetching image' });
-    }
-});
-
 // sending return request by user
 app.post('/loans/:id/request-return', authenticateJWT, async (req, res) => {
     try {
@@ -504,10 +488,10 @@ app.post('/loans/:id/request-return', authenticateJWT, async (req, res) => {
             return res.status(404).json({ message: 'Loan not found or not accessible' });
         }
 
-        // does the user have an image uploaded?
-        if (!loan.imagePath) {
-            return res.status(400).json({ message: 'Image is required before requesting a return' });
-        }
+        // // does the user have an image uploaded?
+        // if (!loan.imagePath) {
+        //     return res.status(400).json({ message: 'Image is required before requesting a return' });
+        // }
 
         // updating the loan status to 'waiting'
         loan.status = 'waiting';
@@ -520,6 +504,7 @@ app.post('/loans/:id/request-return', authenticateJWT, async (req, res) => {
     }
 });
 
+//Accepting loan by admin
 app.post('/admin/loans/:id/accept', authenticateJWT, async (req, res) => {
     try {
         if (req.user.type !== 'admin') {
@@ -558,6 +543,27 @@ app.post('/admin/loans/:id/accept', authenticateJWT, async (req, res) => {
     }
 });
 
+
+// showing image for curent loan
+app.get('/admin/loans/:id/image', authenticateJWT, async (req, res) => {
+    if (req.user.type !== 'admin') {
+        return res.sendStatus(403);
+    }
+
+    try {
+        const loan = await CurrentLoan.findByPk(req.params.id);
+
+        if (!loan || !loan.imagePath) {
+            return res.status(404).json({ message: 'Image not found' });
+        }
+
+        // Send the image file
+        res.sendFile(path.join(__dirname, loan.imagePath));
+    } catch (error) {
+        console.error('Error fetching image:', error);
+        res.status(500).json({ message: 'Error fetching image' });
+    }
+});
 //TODO: Deleting user account
 //TODO: Updating user account
 //TODO: Updating item
