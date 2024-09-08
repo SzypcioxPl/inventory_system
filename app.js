@@ -405,9 +405,6 @@ app.get('/admin/current-loans', authenticateJWT, async (req, res) => {
 
     try {
         const loans = await CurrentLoan.findAll({
-            where: {
-                returnDate: null
-            },
             include: [
                 { model: User, as: 'loaner' }, 
                 { model: Item, as: 'item' }
@@ -427,7 +424,6 @@ app.get('/user/current-loans', authenticateJWT, async (req, res) => {
         const loans = await CurrentLoan.findAll({
             where: {
                 userId: req.user.userId, 
-                returnDate: null
             },
             include: [
                 { model: Item, as: 'item' }  // alias 'item'
