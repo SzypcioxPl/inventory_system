@@ -409,8 +409,8 @@ app.get('/admin/current-loans', authenticateJWT, async (req, res) => {
                 returnDate: null
             },
             include: [
-                { model: User },
-                { model: Item, as: 'item' }  // alias 'item'
+                { model: User, as: 'loaner' }, 
+                { model: Item, as: 'item' }
             ]
         });
         res.json(loans);
@@ -419,6 +419,7 @@ app.get('/admin/current-loans', authenticateJWT, async (req, res) => {
         res.status(500).json({ message: 'Error fetching current loans' });
     }
 });
+
 
 // showing current loans for the logged-in user
 app.get('/user/current-loans', authenticateJWT, async (req, res) => {
@@ -454,10 +455,10 @@ app.post('/return/:loanId', authenticateJWT, upload.single('image'), async (req,
             return res.status(404).json({ message: 'Loan not found or unauthorized' });
         }
 
-        const imagePath = req.file.path;
+        // const imagePath = req.file.path;  // TODO
 
         loan.returnDate = new Date();
-        loan.returnImagePath = imagePath;  // Saving the image path to the loan in db
+        // loan.returnImagePath = imagePath;  // TODO
         await loan.save();
 
         res.status(200).json({ message: 'Return initiated successfully', loan });
@@ -466,6 +467,7 @@ app.post('/return/:loanId', authenticateJWT, upload.single('image'), async (req,
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 // sending return request by user
 app.post('/loans/:id/request-return', authenticateJWT, async (req, res) => {
