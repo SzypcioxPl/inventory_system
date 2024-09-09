@@ -222,14 +222,16 @@ app.get('/items', authenticateJWT, async (req, res) => {
 
 // showing pending orders
 app.get('/admin/orders/pending', authenticateJWT, async (req, res) => {
-    // is the user an admin?
     if (req.user.type !== 'admin') {
         return res.sendStatus(403); 
     }
 
     try {
         const pendingOrders = await Order.findAll({
-            where: { status: 'pending' }
+            where: { status: 'pending' },
+            include: [
+                { model: Item, as: 'item' } // alias 'item'
+            ]
         });
         res.json(pendingOrders);
     } catch (error) {
@@ -240,7 +242,6 @@ app.get('/admin/orders/pending', authenticateJWT, async (req, res) => {
 
 // showing accepted and rejected orders
 app.get('/admin/orders/processed', authenticateJWT, async (req, res) => {
-    // sprawdzenie, czy użytkownik jest administratorem
     if (req.user.type !== 'admin') {
         return res.sendStatus(403); 
     }
@@ -248,8 +249,11 @@ app.get('/admin/orders/processed', authenticateJWT, async (req, res) => {
     try {
         const processedOrders = await Order.findAll({
             where: {
-                status: ['accepted', 'rejected']  // filtering by status
-            }
+                status: ['accepted', 'rejected']
+            },
+            include: [
+                { model: Item, as: 'item' } // alias 'item'
+            ]
         });
         res.json(processedOrders);
     } catch (error) {
@@ -265,7 +269,10 @@ app.get('/student/orders', authenticateJWT, async (req, res) => {
         const orders = await Order.findAll({
             where: {
                 userId: req.user.userId
-            }
+            },
+            include: [
+                { model: Item, as: 'item' } // Dodanie aliasu do relacji
+            ]
         });
 
         if (orders.length > 0) {
@@ -317,7 +324,6 @@ app.post('/orders', authenticateJWT, async (req, res) => {
 // calculating the number of days of the loan
 app.get('/loans/days', authenticateJWT, async (req, res) => {
     try {
-        // is the user logged in?
         if (!req.user || !req.user.id) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
@@ -347,52 +353,60 @@ app.get('/loans/days', authenticateJWT, async (req, res) => {
     }
 });
 
+
 //TODO: Implement the endpoint for returning an item
 
 // FIXED Approve or reject order by Admin
 app.post('/approve-order/:id', authenticateJWT, async (req, res) => {
     if (req.user.type !== 'admin') {
-        return res.sendStatus(403); // Only admins can approve/reject orders
+        return res.sendStatus(403); 
     }
 
     const { id } = req.params;
-    const { status } = req.body; // Accepting "status" from request body
-    const order = await Order.findByPk(id);
-    if (!order) {
-        return res.status(404).json({ message: 'Order not found' });
-    }
+    const { status } = req.body;
+    
+    try {
+        const order = await Order.findByPk(id, {
+            include: [{ model: Item, as: 'item' }] // Dodanie aliasu do relacji
+        });
 
-    const item = await Item.findByPk(order.itemId);
-    if (!item) {
-        return res.status(404).json({ message: 'Item not found' });
-    }
-
-    if (status === 'accepted') {
-        if (item.quantity >= order.ilosc) {
-            await CurrentLoan.create({
-                userId: order.userId,
-                itemId: order.itemId,
-                loanDate: new Date(),
-                returnDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // Default return date set to one month from loan date
-                zaakceptowal: req.user.username, // Set the admin's username who accepted the order
-                ilosc: order.ilosc,
-                status: 'active' // Default status set to ACTIVE NOT 'ACCEPTED'
-            });
-
-            item.quantity -= order.ilosc; // Update item quantity based on the order
-            await item.save();
-            await order.destroy(); // Remove the order after acceptance
-            return res.status(200).json({ message: 'Order accepted and loan created' });
-        } else {
-            return res.status(400).json({ message: 'Item not available in requested quantity' });
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
         }
-    } else if (status === 'rejected') {
-        await order.destroy(); // Remove the order if it is rejected
-        return res.status(200).json({ message: 'Order rejected' });
-    } else {
-        return res.status(400).json({ message: 'Invalid status value' });
+
+        const item = order.item; // Użycie powiązanego przedmiotu z aliasem
+
+        if (status === 'accepted') {
+            if (item.quantity >= order.ilosc) {
+                await CurrentLoan.create({
+                    userId: order.userId,
+                    itemId: order.itemId,
+                    loanDate: new Date(),
+                    returnDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), 
+                    zaakceptowal: req.user.username,
+                    ilosc: order.ilosc,
+                    status: 'active'
+                });
+
+                item.quantity -= order.ilosc; 
+                await item.save();
+                await order.destroy(); // Usuń zamówienie po zaakceptowaniu
+                return res.status(200).json({ message: 'Order accepted and loan created' });
+            } else {
+                return res.status(400).json({ message: 'Item not available in requested quantity' });
+            }
+        } else if (status === 'rejected') {
+            await order.destroy(); // Usuń zamówienie po odrzuceniu
+            return res.status(200).json({ message: 'Order rejected' });
+        } else {
+            return res.status(400).json({ message: 'Invalid status value' });
+        }
+    } catch (error) {
+        console.error('Error approving/rejecting order:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 
 //======================================LOANS======================================================
