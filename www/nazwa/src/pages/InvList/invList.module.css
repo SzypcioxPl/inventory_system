@@ -1,0 +1,8 @@
+.landingPage{
+    background-image: url("/login_wallpaper.jpg");
+    background-size: cover;
+    background-position: center;
+    display: grid;
+    min-height: 100vh;
+    justify-content: center;
+}

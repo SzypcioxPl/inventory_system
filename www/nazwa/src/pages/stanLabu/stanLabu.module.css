@@ -1,0 +1,406 @@
+.stanLabu {
+  height: 100vh;
+  background-image: url("/login_wallpaper.jpg");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+.midSection {
+  /* min-height: 100%; */
+  opacity: 0.85;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow-x: auto;
+  position: relative;
+  /* max-width: 80vw; */
+  /* width: 40%; */
+}
+
+.midSectionContainer {
+  background-color: white;
+  background-color: rgba(255, 255, 255, 0.6);
+  /* opacity: 0.85; */
+  padding-left: 20vw;
+}
+.header {
+  margin-bottom: 50px;
+  margin-top: 20px;
+}
+.header div {
+  font-size: 3rem;
+  font-weight: bold;
+
+  color: #5e727f;
+  font-family: Nico Moji;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color: rgb(44, 44, 44);
+}
+
+.labItemTable {
+  border-collapse: separate;
+  border-spacing: 2px;
+  width: 90%;
+  font-family: Arial;
+  /* overflow-x: auto; */
+  /* flex-shrink: 0; */
+  text-wrap: nowrap;
+  animation: opacityLoad ease-in-out 0.2s;
+}
+
+.labItemTable thead {
+  background-color: #9bacb1;
+
+  color: white;
+  font-size: 25px;
+  padding-inline: 30px;
+}
+
+.labItemTable thead tr th {
+  padding: 6px;
+  padding-inline: 50px;
+  /* min-width: 150px; */
+}
+.labItemTable tbody {
+  background-color: #abb9bd;
+}
+
+.labItemTable tbody tr td {
+  padding: 5px;
+  font-size: 20px;
+  font-weight: bold;
+  height: 50px;
+  max-width: 220px;
+  padding-inline: 15px;
+  overflow-x: auto;
+}
+
+.deletingBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(192, 192, 192, 0.8);
+}
+
+.deleteItemForm {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  max-width: 600px;
+  max-height: 600px;
+  background-color: #4c5b61;
+  border-radius: 10px;
+  border: 2px solid white;
+  display: flex;
+  flex-direction: column;
+}
+.ordersList {
+  width: 20vw;
+  min-width: 200px;
+  max-width: 650px;
+  /* width: 400px; */
+  height: calc(100vh - 40px);
+  /* height: calc(100% - 40px); */
+  overflow-y: auto;
+  /* flex-shrink: 0; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 40px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* padding-right: 20vw; */
+  background-color: rgba(120, 120, 120, 0.3);
+}
+
+.orderContainer {
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+.order {
+  background-color: #60747c;
+  width: 100%;
+  max-width: 400px;
+  height: 80px;
+  border-radius: 8px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.4rem;
+  font-family: arial;
+  flex-shrink: 0;
+  cursor: pointer;
+  animation: opacityLoad ease-in-out 0.2s;
+}
+
+@keyframes opacityLoad {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+.orderInfoList {
+  width: 90%;
+  margin-left: 5%;
+  background-color: #abb9bd;
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 0px 0px 10px 10px;
+}
+
+.order:hover {
+  background-color: #4c5b61;
+}
+
+.singleOrderInfo {
+  width: 95%;
+  margin-left: 5%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 3px;
+  color: white;
+  font-weight: "bold";
+}
+.infoHeader {
+  color: black;
+  font-weight: bold;
+  font-family: Arial;
+}
+
+.acceptOrderButton {
+  color: green;
+  border: 2px solid green;
+  border-radius: 5px;
+  padding: 5px;
+  padding-inline: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.acceptOrderButton:hover {
+  color: white;
+  background-color: green;
+  scale: 0.96;
+}
+
+.acceptOrderButton:active {
+  scale: 0.9;
+}
+.declineOrderButton {
+  border-radius: 5px;
+  background-color: red;
+  color: white;
+  font-weight: bold;
+  border: 2px solid red;
+  cursor: pointer;
+  padding: 5px;
+  padding-inline: 10px;
+}
+
+.declineOrderButton:hover {
+  scale: 0.96;
+  background-color: white;
+  color: red;
+}
+.declineOrderButton:active {
+  scale: 0.9;
+}
+
+.rollUpButton {
+  margin-top: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-family: Arial;
+}
+.logo {
+  margin-top: 30px;
+  width: 100%;
+  aspect-ratio: 1/1;
+  background-image: url("/telephoners.png");
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.orderCreator {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.confirmOrder {
+  margin-left: 20px;
+  background-color: green;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  aspect-ratio: 1/1;
+  cursor: pointer;
+  color: white;
+  border: 1px solid transparent;
+  font-weight: bold;
+}
+
+.confirmOrder:hover {
+  background-color: rgb(65, 221, 65);
+  border: 1px solid white;
+}
+
+.confirmOrder:active {
+  scale: 0.8;
+  background-color: rgb(1, 95, 1);
+}
+
+.addItemForm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #9bacb1;
+  border-radius: 10px;
+  border: 2px solid white;
+}
+
+.addItemForm input {
+  height: 20px;
+  width: 200px;
+  padding: 5px;
+  padding-inline: 10px;
+  border-radius: 5px;
+  border: 3px solid green;
+  font-weight: bold;
+}
+
+.addItemForm button {
+  cursor: pointer;
+  color: green;
+  background-color: white;
+  border: 2px solid green;
+  background-color: green;
+  color: white;
+  border-radius: 10px;
+  height: 30px;
+  font-weight: bold;
+}
+.newItemContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 50px;
+  padding-top: 20px;
+}
+.addItemButton {
+  background-color: white;
+  width: 200px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: green;
+  border: 2px solid green;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+.cancelButton {
+  color: red;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.changeTableDataButton {
+  font-weight: bold;
+  padding: 10px;
+  padding-inline: 25px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  background-color: #abb9bd;
+  border: 3px solid #9bacb1;
+  color: white;
+  border-radius: 5px;
+  background-color: #60747c;
+  font-size: 15px;
+}
+
+.changeTableDataButton:hover {
+  scale: 0.965;
+  opacity: 0.8;
+}
+
+.sideMenyButtons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+@media (max-width: 1300px) {
+  .addItemForm input {
+    width: 150px;
+  }
+}
+@media (max-width: 1024px) {
+  .stanLabu {
+    flex-direction: column-reverse;
+  }
+
+  .midSection {
+    min-width: 100vw;
+    display: flex;
+    justify-content: left;
+    align-items: flex-start;
+  }
+
+  .midSectionContainer {
+    min-width: 100%;
+    padding-bottom: 50px;
+    background-color: none;
+    padding-left: 0;
+  }
+
+  .ordersList {
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 50px;
+    position: unset;
+  }
+  .logo {
+    display: none;
+  }
+
+  .addItemForm {
+    flex-direction: column;
+  }
+}
